@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Customer Behavior Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            padding: 60px;
+            display: none;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        .slide-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .slide-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            height: calc(100% - 120px);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+
+        .content-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .bullet-points {
+            list-style: none;
+            padding: 0;
+        }
+
+        .bullet-points li {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .bullet-points li:before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .cluster-info {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+        }
+
+        .cluster-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        .key-finding {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .ethics-point {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .process-step {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        .large-text {
+            font-size: 1.3em;
+            line-height: 1.8;
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px;
+            }
+            
+            .slide-title {
+                font-size: 2em;
+            }
+            
+            .two-column, .three-column {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / <span id="total-slides">12</span>
+        </div>
+
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="center-content">
+                <div class="slide-header">
+                    <h1 class="slide-title">E-commerce Customer Behavior Analysis</h1>
+                    <p class="slide-subtitle">Uncovering Insights Through Data Mining & Visualization</p>
+                </div>
+                <div class="highlight-box" style="max-width: 600px;">
+                    <h2 style="margin-bottom: 20px;">Project Overview</h2>
+                    <p class="large-text">Comprehensive analysis of customer behavior patterns using advanced data mining techniques and interactive visualizations</p>
+                </div>
+                <div style="margin-top: 40px;">
+                    <p><strong>Student:</strong> Daffodil.E.Akaluogbo (M01034167)</p>
+                    <p><strong>Module:</strong> CST3340 Business Intelligence</p>
+                    <p><strong>Lecturer:</strong> Dr Suraj Juddoo</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Dataset Overview -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Dataset Overview</h1>
+                <p class="slide-subtitle">Understanding Our E-commerce Customer Data</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">Key Attributes</h3>
+                        <ul class="bullet-points">
+                            <li><strong>Customer Demographics:</strong> Age, Gender, City</li>
+                            <li><strong>Membership & Loyalty:</strong> Membership Type</li>
+                            <li><strong>Purchase Behavior:</strong> Total Spend, Items Purchased</li>
+                            <li><strong>Satisfaction Metrics:</strong> Average Rating, Satisfaction Level</li>
+                            <li><strong>Engagement:</strong> Days Since Last Purchase, Discount Usage</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h3 style="margin-bottom: 20px;">Dataset Characteristics</h3>
+                        <div class="stat-box" style="margin-bottom: 20px;">
+                            <div class="stat-number">350</div>
+                            <div class="stat-label">Total Customers</div>
+                        </div>
+                        <div class="stat-box" style="margin-bottom: 20px;">
+                            <div class="stat-number">11</div>
+                            <div class="stat-label">Data Attributes</div>
+                        </div>
+                        <p style="margin-top: 20px; font-size: 1.1em;">Rich dataset covering diverse customer profiles across multiple demographics and behavioral patterns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Data Cleaning Process -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Data Cleaning & Preprocessing</h1>
+                <p class="slide-subtitle">Ensuring Data Quality for Accurate Analysis</p>
+            </div>
+            <div class="slide-content">
+                <div class="three-column">
+                    <div class="process-step">
+                        <h3>Data Import</h3>
+                        <p>Imported dataset using Python & Pandas in Google Colab environment</p>
+                    </div>
+                    <div class="process-step">
+                        <h3>Quality Check</h3>
+                        <p>Identified 2 missing values<br>No duplicate rows found</p>
+                    </div>
+                    <div class="process-step">
+                        <h3>Data Cleaning</h3>
+                        <p>Removed null values using dropna() method</p>
+                    </div>
+                </div>
+                <div class="key-finding">
+                    <h3>Key Result: Clean Dataset Achieved</h3>
+                    <p>Successfully preprocessed data with 100% completeness and no duplicates, ensuring reliable analysis foundation</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Key Demographic Insights -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Key Demographic Insights</h1>
+                <p class="slide-subtitle">Age, Gender, and Geographic Patterns</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">Age Distribution Findings</h3>
+                        <div class="key-finding">
+                            <strong>30-year-olds dominate:</strong> Highest customer count AND highest spending ($63.6K)
+                        </div>
+                        <div class="key-finding">
+                            <strong>28-year-olds:</strong> Second highest spenders ($35.8K) with highest satisfaction (4.8 rating)
+                        </div>
+                        <div class="key-finding">
+                            <strong>Age Groups 30-39:</strong> Most active and satisfied segment
+                        </div>
+                    </div>
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">Geographic & Gender Insights</h3>
+                        <div class="stat-box" style="margin-bottom: 15px;">
+                            <div class="stat-number">$172K</div>
+                            <div class="stat-label">Male Total Spending</div>
+                        </div>
+                        <div class="stat-box" style="margin-bottom: 15px;">
+                            <div class="stat-number">$123K</div>
+                            <div class="stat-label">Female Total Spending</div>
+                        </div>
+                        <div class="key-finding">
+                            <strong>Top Cities:</strong> San Francisco ($84.6K), New York ($68.7K)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Membership Analysis -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Membership Tier Analysis</h1>
+                <p class="slide-subtitle">Understanding Loyalty Program Impact</p>
+            </div>
+            <div class="slide-content">
+                <div class="center-content">
+                    <div class="three-column">
+                        <div class="cluster-info" style="background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);">
+                            <div class="cluster-title">🥇 Gold Members</div>
+                            <p>Highest total spending<br>Most items purchased<br>Premium tier performance</p>
+                        </div>
+                        <div class="cluster-info" style="background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);">
+                            <div class="cluster-title">🥈 Silver Members</div>
+                            <p>Moderate spending<br>Balanced purchase behavior<br>Growth potential</p>
+                        </div>
+                        <div class="cluster-info" style="background: linear-gradient(135deg, #cd7f32 0%, #b8860b 100%);">
+                            <div class="cluster-title">🥉 Bronze Members</div>
+                            <p>Lowest spending tier<br>Fewer items purchased<br>Entry-level engagement</p>
+                        </div>
+                    </div>
+                    <div class="key-finding" style="margin-top: 40px; max-width: 800px;">
+                        <h3>Strategic Insight</h3>
+                        <p>Clear correlation between membership tier and spending behavior - Premium tiers deliver higher value and engagement</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Data Mining Approach -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Data Mining Methodology</h1>
+                <p class="slide-subtitle">K-Means Clustering for Customer Segmentation</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">Why K-Means Clustering?</h3>
+                        <ul class="bullet-points">
+                            <li>Ideal for numerical data (Age, Total Spend, Items Purchased)</li>
+                            <li>Groups similar customers together</li>
+                            <li>Reveals hidden patterns in customer behavior</li>
+                            <li>Enables targeted marketing strategies</li>
+                        </ul>
+                    </div>
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">Selected Attributes</h3>
+                        <div class="process-step">
+                            <strong>Age:</strong> Demographic segmentation
+                        </div>
+                        <div class="process-step">
+                            <strong>Total Spend:</strong> Financial behavior
+                        </div>
+                        <div class="process-step">
+                            <strong>Items Purchased:</strong> Purchase frequency
+                        </div>
+                        <div class="process-step">
+                            <strong>Satisfaction Level:</strong> Customer sentiment
+                        </div>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <h3>Data Preprocessing in Weka</h3>
+                    <p>Applied ReplaceMissingValues filter and InterquartileRange outlier detection for optimal clustering performance</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Clustering Results Model 1 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Customer Segmentation Results</h1>
+                <p class="slide-subtitle">Model 1: Behavior & Satisfaction Based Clustering</p>
+            </div>
+            <div class="slide-content">
+                <div class="three-column">
+                    <div class="cluster-info" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);">
+                        <div class="cluster-title">Cluster 0 - Engaged Shoppers</div>
+                        <p><strong>20% of customers</strong></p>
+                        <p>Age: 31.1 years</p>
+                        <p>Spend: $1,100.08</p>
+                        <p>Items: 14.7</p>
+                        <p>Status: <strong>Satisfied</strong></p>
+                    </div>
+                    <div class="cluster-info" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);">
+                        <div class="cluster-title">Cluster 1 - At-Risk Customers</div>
+                        <p><strong>63% of customers</strong></p>
+                        <p>Age: 35.6 years</p>
+                        <p>Spend: $604.56</p>
+                        <p>Items: 10</p>
+                        <p>Status: <strong>Unsatisfied</strong></p>
+                    </div>
+                    <div class="cluster-info" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                        <div class="cluster-title">Cluster 2 - Premium Customers</div>
+                        <p><strong>17% of customers</strong></p>
+                        <p>Age: 29.1 years</p>
+                        <p>Spend: $1,459.77</p>
+                        <p>Items: 20</p>
+                        <p>Status: <strong>Satisfied</strong></p>
+                    </div>
+                </div>
+                <div class="key-finding" style="margin-top: 30px;">
+                    <h3>Critical Insight: 63% of customers are unsatisfied and low-spending</h3>
+                    <p>Immediate action needed to prevent churn and improve customer experience</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Clustering Results Model 2 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Enhanced Customer Segmentation</h1>
+                <p class="slide-subtitle">Model 2: Demographics & Engagement Clustering</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="cluster-info" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+                        <div class="cluster-title">Cluster 0 - High-Value Actives</div>
+                        <p><strong>33% of customers</strong></p>
+                        <ul class="bullet-points" style="color: white;">
+                            <li>Younger customers (30 years avg)</li>
+                            <li>Higher spending ($1,311 avg)</li>
+                            <li>More purchases (18 items avg)</li>
+                            <li>Higher ratings (4.68 avg)</li>
+                            <li>Recent activity (18 days)</li>
+                        </ul>
+                    </div>
+                    <div class="cluster-info" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                        <div class="cluster-title">Cluster 1 - Low-Engagement Risk</div>
+                        <p><strong>67% of customers</strong></p>
+                        <ul class="bullet-points" style="color: white;">
+                            <li>Older customers (35 years avg)</li>
+                            <li>Lower spending ($612 avg)</li>
+                            <li>Fewer purchases (10 items avg)</li>
+                            <li>Lower ratings (3.69 avg)</li>
+                            <li>Less recent activity (31 days)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h3>Model Performance</h3>
+                    <p><strong>WCSS: 137.71</strong> - Excellent cluster definition with minimal within-cluster variance</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Business Implications -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Strategic Business Implications</h1>
+                <p class="slide-subtitle">Actionable Insights for Customer Management</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">🎯 Targeted Marketing Opportunities</h3>
+                        <ul class="bullet-points">
+                            <li><strong>Focus on 30-39 age group:</strong> Highest spending and satisfaction</li>
+                            <li><strong>Male-focused campaigns:</strong> 40% higher spending than females</li>
+                            <li><strong>Geographic targeting:</strong> San Francisco & New York priority markets</li>
+                            <li><strong>Premium tier promotion:</strong> Gold members drive highest revenue</li>
+                        </ul>
+                    </div>
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">⚠️ Risk Mitigation Strategies</h3>
+                        <ul class="bullet-points">
+                            <li><strong>Address 63% unsatisfied customers:</strong> Immediate retention programs needed</li>
+                            <li><strong>Re-engage older customers:</strong> Tailored offerings for 35+ age group</li>
+                            <li><strong>Improve lower-tier experience:</strong> Bronze/Silver member value enhancement</li>
+                            <li><strong>Reduce purchase gaps:</strong> Target customers with 30+ day inactivity</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="key-finding">
+                    <h3>Priority Action: Customer Retention Program</h3>
+                    <p>Immediate focus on the 67% low-engagement cluster to prevent churn and improve satisfaction scores</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Data Ethics -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Data Ethics & Responsible Analysis</h1>
+                <p class="slide-subtitle">Maintaining Trust & Compliance</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">Core Ethical Principles</h3>
+                        <div class="ethics-point">
+                            <strong>Data Privacy & Confidentiality:</strong> Protecting customer personal information
+                        </div>
+                        <div class="ethics-point">
+                            <strong>Informed Consent:</strong> Transparent data usage policies
+                        </div>
+                        <div class="ethics-point">
+                            <strong>Transparency & Accountability:</strong> Clear methodology and decision processes
+                        </div>
+                    </div>
+                    <div class="content-box">
+                        <h3 style="color: #667eea; margin-bottom: 20px;">Implementation Guidelines</h3>
+                        <ul class="bullet-points">
+                            <li>Anonymize customer identifiers in all analyses</li>
+                            <li>Ensure data is used only for stated business purposes</li>
+                            <li>Maintain audit trails for all data processing</li>
+                            <li>Regular review of ethical compliance</li>
+                            <li>Avoid misinterpretation or manipulation of results</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <h3>Ethical Commitment</h3>
+                    <p>This analysis adheres to highest ethical standards, ensuring customer trust while delivering valuable business insights</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Key Recommendations -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Strategic Recommendations</h1>
+                <p class="slide-subtitle">Data-Driven Action Plan</p>
+            </div>
+            <div class="slide-content">
+                <div class="three-column">
+                    <div class="process-step">
+                        <h3>🚀 Immediate Actions</h3>
+                        <ul class="bullet-points" style="color: white;">
+                            <li>Launch retention campaign for unsatisfied customers</li>
+                            <li>Implement satisfaction improvement program</li>
+                            <li>Review service quality processes</li>
+                        </ul>
+                    </div>
+                    <div class="process-step">
+                        <h3>📈 Growth Strategies</h3>
+                        <ul class="bullet-points" style="color: white;">
+                            <li>Expand marketing in SF & NYC</li>
+                            <li>Develop premium tier incentives</li>
+                            <li>Target 30-39 age demographic</li>
+                        </ul>
+                    </div>
+                    <div class="process-step">
+                        <h3>🎯 Personalization</h3>
+                        <ul class="bullet-points" style="color: white;">
+                            <li>Customize offerings by cluster</li>
+                            <li>Develop age-specific campaigns</li>
+                            <li>Create gender-targeted promotions</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="key-finding" style="margin-top: 30px;">
+                    <h3>Expected Impact</h3>
+                    <p>Implementing these recommendations could improve customer satisfaction by 25% and reduce churn by 15-20%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Conclusion -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Conclusion & Next Steps</h1>
+                <p class="slide-subtitle">Project Summary & Future Opportunities</p>
+            </div>
+            <div class="slide-content">
+                <div class="center-content">
+                    <div class="highlight-box" style="max-width: 800px; margin-bottom: 30px;">
+                        <h3 style="margin-bottom: 20px;">Project Achievements</h3>
+                        <ul class="bullet-points" style="color: white;">
+                            <li>Successfully analyzed 350 customer records with 100% data quality</li>
+                            <li>Identified 3 distinct customer segments with actionable characteristics</li>
+                            <li>Revealed critical insight: 63% of customers are unsatisfied and at-risk</li>
+                            <li>Provided strategic recommendations for retention and growth</li>
+                        </ul>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3 style="color: #667eea; margin-bottom: 20px;">Key Technologies Used</h3>
+                            <ul class="bullet-points">
+                                <li>Python & Pandas for data cleaning</li>
+                                <li>Tableau for visualization</li>
+                                <li>Weka for K-means clustering</li>
+                                <li>Statistical analysis & validation</li>
+                            </ul>
+                        </div>
+                        <div class="content-box">
+                            <h3 style="color: #667eea; margin-bottom: 20px;">Future Opportunities</h3>
+                            <ul class="bullet-points">
+                                <li>Real-time customer scoring system</li>
+                                <li>Predictive churn modeling</li>
+                                <li>Advanced recommendation engine</li>
+                                <li>Automated segmentation updates</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">◀ Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next ▶</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            
+            // Update slide counter
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+            document.getElementById('total-slides').textContent = totalSlides;
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === slides.length - 1;
+        }
+
+        function changeSlide(direction) {
+            if (direction === 1 && currentSlide < slides.length - 1) {
+                showSlide(currentSlide + 1);
+            } else if (direction === -1 && currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                changeSlide(-1);
+            }
+        });
+
+        // Initialize
+        showSlide(0);
+
+        // Add click-to-advance functionality (optional)
+        document.addEventListener('click', function(e) {
+            // Only advance if clicking on the slide content (not navigation buttons)
+            if (!e.target.classList.contains('nav-btn') && !e.target.closest('.navigation')) {
+                changeSlide(1);
+            }
+        });
+
+        // Prevent text selection during presentation
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+
+        // Add smooth transitions and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add entrance animations for slide content
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Apply animation styles to content boxes
+            document.querySelectorAll('.content-box, .highlight-box, .stat-box, .cluster-info, .key-finding, .ethics-point, .process-step').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.6s ease';
+                observer.observe(el);
+            });
+        });
+
+        // Auto-advance option (uncomment to enable)
+        // setInterval(function() {
+        //     if (currentSlide < slides.length - 1) {
+        //         changeSlide(1);
+        //     }
+        // }, 30000); // Advance every 30 seconds
+    </script>
+</body>
+</html>
