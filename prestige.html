@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starbucks Business Intelligence: Data-Driven Inventory Forecasting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #00704A 0%, #ffffff 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            display: none;
+            padding: 40px;
+            position: relative;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, #00704A 0%, #228B22 100%);
+            color: white;
+            padding: 20px 30px;
+            margin: -40px -40px 30px -40px;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .slide-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .slide-subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            height: 100%;
+        }
+
+        .content-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .content-list li {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            margin: 15px 0;
+            padding: 20px;
+            border-left: 5px solid #00704A;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-list li:hover {
+            transform: translateX(10px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #00704A 0%, #228B22 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,112,74,0.3);
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #fff 0%, #f1f3f4 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #00704A;
+            margin: 10px;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #00704A;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .visual-placeholder {
+            background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+            border: 2px dashed #00704A;
+            border-radius: 15px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            color: #666;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-placeholder::before {
+            content: "📊";
+            font-size: 4em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #00704A 0%, #228B22 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            margin: 0 5px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,112,74,0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,112,74,0.4);
+        }
+
+        .slide-counter {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(0,112,74,0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .presenter-notes {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .process-step {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border-top: 4px solid #00704A;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .step-number {
+            background: #00704A;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-weight: bold;
+        }
+
+        .conclusion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 20px 0;
+        }
+
+        .conclusion-card {
+            background: linear-gradient(135deg, #00704A 0%, #228B22 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,112,74,0.3);
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .pros, .cons {
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .pros {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left: 5px solid #28a745;
+        }
+
+        .cons {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left: 5px solid #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .slide-title {
+                font-size: 1.8em;
+            }
+            
+            .content-grid, .two-column {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .slide {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-title">Starbucks Business Intelligence</div>
+                <div class="slide-subtitle">Data-Driven Inventory Forecasting for Peak Seasons</div>
+            </div>
+            <div class="slide-content">
+                <div class="highlight-box">
+                    <h2>🎯 Optimizing Inventory Through Advanced Analytics</h2>
+                    <p style="font-size: 1.3em; margin-top: 20px;">Leveraging Big Data, Cloud Computing, and Machine Learning for Strategic Decision Making</p>
+                </div>
+                <div style="margin-top: 40px; text-align: center;">
+                    <p><strong>Student:</strong> Kingsley Egbuedike (M01034761)</p>
+                    <p><strong>Module:</strong> CST3340 Business Intelligence</p>
+                    <p><strong>Lecturer:</strong> Dr. Suraj Juddoo</p>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Welcome everyone. Today we'll explore how Starbucks can revolutionize their inventory management using cutting-edge business intelligence techniques. We'll cover data warehousing, big data analytics, and practical implementation strategies.
+            </div>
+        </div>
+
+        <!-- Slide 2: Problem Statement -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">The Challenge</div>
+                <div class="slide-subtitle">Seasonal Inventory Management Pain Points</div>
+            </div>
+            <div class="slide-content">
+                <div class="content-grid">
+                    <div>
+                        <ul class="content-list">
+                            <li><strong>🌡️ Seasonal Volatility</strong><br>Sales fluctuate dramatically during winter/summer and holidays</li>
+                            <li><strong>📦 Inventory Imbalance</strong><br>Overstocking leads to waste, understocking loses sales</li>
+                            <li><strong>🎯 Limited Prediction</strong><br>Traditional methods rely on historical data and manager intuition</li>
+                            <li><strong>💰 Financial Impact</strong><br>Poor forecasting affects profitability and customer satisfaction</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>Key Statistics</h3>
+                        <div class="stat-box">
+                            <span class="stat-number">40%</span>
+                            <div class="stat-label">Increase in hot beverage sales during cold periods</div>
+                        </div>
+                        <p style="margin-top: 20px;">Traditional forecasting methods are insufficient for modern retail complexity</p>
+                    </div>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Emphasize that Starbucks faces significant challenges with seasonal demand fluctuations. The 40% increase statistic shows how dramatic these changes can be. Highlight that current methods are reactive rather than predictive.
+            </div>
+        </div>
+
+        <!-- Slide 3: Data Requirements -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Data Architecture</div>
+                <div class="slide-subtitle">Internal & External Data Sources</div>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">🏢 Internal Data Sources</h3>
+                        <ul class="content-list">
+                            <li><strong>POS Systems</strong><br>Real-time transaction data by store, time, and product</li>
+                            <li><strong>Inventory Logs</strong><br>Stock levels, restocking dates, spoilage tracking</li>
+                            <li><strong>Customer Analytics</strong><br>Loyalty program data, purchasing patterns</li>
+                            <li><strong>Operations Data</strong><br>Store traffic, staffing levels, promotional calendars</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">🌐 External Data Sources</h3>
+                        <ul class="content-list">
+                            <li><strong>Weather APIs</strong><br>Temperature, precipitation, seasonal patterns</li>
+                            <li><strong>Social Media</strong><br>Sentiment analysis from Twitter, Instagram</li>
+                            <li><strong>Economic Indicators</strong><br>Consumer spending, inflation data</li>
+                            <li><strong>Event Calendars</strong><br>Public holidays, local events, festivals</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Explain how internal data provides the foundation while external data adds context. Emphasize the real-time nature of modern data collection and how APIs enable seamless integration.
+            </div>
+        </div>
+
+        <!-- Slide 4: Data Warehouse Architecture -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Data Warehouse Design</div>
+                <div class="slide-subtitle">Star Schema Architecture for Optimal Performance</div>
+            </div>
+            <div class="slide-content">
+                <div class="content-grid">
+                    <div>
+                        <div class="visual-placeholder">
+                            Star Schema Diagram
+                            <br>Central Fact Table: Sales
+                            <br>Dimensions: Time, Product, Store, Customer, Weather
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">Architecture Benefits</h3>
+                        <div class="pros">
+                            <h4>✅ Advantages</h4>
+                            <ul style="margin-top: 15px;">
+                                <li>Unified data integration</li>
+                                <li>Historical trend analysis</li>
+                                <li>Optimized OLAP queries</li>
+                                <li>Enhanced data quality</li>
+                            </ul>
+                        </div>
+                        <div class="cons" style="margin-top: 20px;">
+                            <h4>⚠️ Considerations</h4>
+                            <ul style="margin-top: 15px;">
+                                <li>High implementation costs</li>
+                                <li>ETL processing delays</li>
+                                <li>Limited real-time capabilities</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Explain the star schema simplifies complex queries and improves performance. Mention that while there are cost considerations, the long-term benefits outweigh initial investments for a company like Starbucks.
+            </div>
+        </div>
+
+        <!-- Slide 5: ETL Process -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">ETL Pipeline</div>
+                <div class="slide-subtitle">Extract, Transform, Load Process</div>
+            </div>
+            <div class="slide-content">
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">E</div>
+                        <h3>Extract</h3>
+                        <p>Daily data collection from POS systems, APIs, loyalty programs using Kafka streaming and scheduled exports</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">T</div>
+                        <h3>Transform</h3>
+                        <p>Data cleansing, enrichment, standardization using Apache Spark, Pandas, and SQL procedures</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">L</div>
+                        <h3>Load</h3>
+                        <p>Batch and incremental loading into data warehouse (Amazon Redshift, Snowflake)</p>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h3>🔄 Processing Strategy</h3>
+                    <p>Batch processing for historical analysis + Real-time streaming for LTO products and urgent inventory decisions</p>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Emphasize that ETL is the backbone of the data pipeline. Mention that while batch processing works for most scenarios, real-time capabilities are crucial for limited-time offers and sudden demand spikes.
+            </div>
+        </div>
+
+        <!-- Slide 6: OLAP Capabilities -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">OLAP Analytics</div>
+                <div class="slide-subtitle">Multidimensional Analysis for Business Insights</div>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">📊 Analysis Capabilities</h3>
+                        <ul class="content-list">
+                            <li><strong>Seasonal Performance</strong><br>Pumpkin Spice Latte sales analysis across all stores in October</li>
+                            <li><strong>Regional Segmentation</strong><br>Cold beverage preferences by demographics and geography</li>
+                            <li><strong>Product Comparison</strong><br>Seasonal vs. non-seasonal product profitability by quarter</li>
+                            <li><strong>Drill-down Analysis</strong><br>Regional → Store → Daily sales patterns</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="highlight-box">
+                            <h3>Example OLAP Query</h3>
+                            <p style="font-family: monospace; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                "What were the sales and inventory usage of holiday beverages at Northeast stores during December?"
+                            </p>
+                            <p>Involves slicing by product category and month, aggregating store data by region, and analyzing weekly trends</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> OLAP enables complex analytical queries that would be difficult with traditional databases. Give concrete examples of how managers can use these insights for decision-making.
+            </div>
+        </div>
+
+        <!-- Slide 7: Big Data Challenges -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Big Data Integration</div>
+                <div class="slide-subtitle">Handling Volume, Velocity, and Variety</div>
+            </div>
+            <div class="slide-content">
+                <div class="content-grid">
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">The 3 V's Challenge</h3>
+                        <div class="stat-box">
+                            <span class="stat-number" style="font-size: 2em;">📊</span>
+                            <div class="stat-label"><strong>Volume</strong><br>Massive data from social media channels</div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number" style="font-size: 2em;">⚡</span>
+                            <div class="stat-label"><strong>Velocity</strong><br>Real-time processing requirements</div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number" style="font-size: 2em;">🔄</span>
+                            <div class="stat-label"><strong>Variety</strong><br>Structured, semi-structured, unstructured data</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">Why Traditional Warehouses Fall Short</h3>
+                        <ul class="content-list">
+                            <li><strong>Social Media Volume</strong><br>Millions of posts created rapidly</li>
+                            <li><strong>ETL Delays</strong><br>Batch processing can't provide real-time insights</li>
+                            <li><strong>Unstructured Content</strong><br>Text, images don't fit relational models</li>
+                            <li><strong>Rapid Response Needs</strong><br>Weather changes, viral trends require immediate action</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Emphasize that traditional data warehouses aren't obsolete but need to be complemented with big data technologies. Social media sentiment can change overnight and affect product demand immediately.
+            </div>
+        </div>
+
+        <!-- Slide 8: Hadoop Solution -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Hadoop Ecosystem</div>
+                <div class="slide-subtitle">Big Data Processing Framework</div>
+            </div>
+            <div class="slide-content">
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">H</div>
+                        <h3>HDFS</h3>
+                        <p>Distributed storage for large unstructured datasets like social media sentiment data</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">M</div>
+                        <h3>MapReduce</h3>
+                        <p>Parallel processing of big datasets across multiple machines for trend analysis</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">Y</div>
+                        <h3>YARN</h3>
+                        <p>Resource management and job scheduling for optimal computing resource allocation</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">H</div>
+                        <h3>Hive</h3>
+                        <p>SQL-like interface enabling analysts to query big data using familiar syntax</p>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h3>🎯 Starbucks Implementation</h3>
+                    <p>Social media sentiment analysis • Customer response tracking for seasonal launches • Multi-region trend identification • Cost-effective scalable processing</p>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Hadoop provides the foundation for processing data that doesn't fit in traditional systems. Emphasize cost-effectiveness and scalability for a global company like Starbucks.
+            </div>
+        </div>
+
+        <!-- Slide 9: Cloud Strategy -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Cloud Computing Strategy</div>
+                <div class="slide-subtitle">Scalable, Flexible, Cost-Effective Solutions</div>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">☁️ Cloud Benefits</h3>
+                        <ul class="content-list">
+                            <li><strong>Scalability</strong><br>Handle peak season data spikes automatically</li>
+                            <li><strong>Integration</strong><br>Seamless ETL and BI tool connectivity</li>
+                            <li><strong>Global Access</strong><br>Multi-region availability and disaster recovery</li>
+                            <li><strong>Cost Efficiency</strong><br>Pay-as-you-use pricing model</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">🛠️ Platform Solutions</h3>
+                        <div class="stat-box">
+                            <strong>Data Warehousing</strong>
+                            <div class="stat-label">Amazon Redshift<br>Google BigQuery</div>
+                        </div>
+                        <div class="stat-box">
+                            <strong>Big Data Storage</strong>
+                            <div class="stat-label">Amazon S3<br>Azure Blob Storage</div>
+                        </div>
+                        <div class="stat-box">
+                            <strong>Real-time Processing</strong>
+                            <div class="stat-label">Hadoop + Spark<br>on Cloud Platforms</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Cloud computing is essential for global operations. Mention specific benefits like automatic scaling during holiday seasons and the ability to process social media data in real-time across different time zones.
+            </div>
+        </div>
+
+        <!-- Slide 10: Analytics Results -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Data Analytics Results</div>
+                <div class="slide-subtitle">World Happiness Report Analysis Insights</div>
+            </div>
+            <div class="slide-content">
+                <div class="content-grid">
+                    <div>
+                        <h3 style="color: #00704A; margin-bottom: 20px;">📈 Key Findings</h3>
+                        <ul class="content-list">
+                            <li><strong>GDP & Social Support</strong><br>Strongest predictors of happiness scores</li>
+                            <li><strong>Nordic Leadership</strong><br>Finland, Denmark, Iceland top global rankings</li>
+                            <li><strong>Model Performance</strong><br>R-squared value of 0.75-0.85 showing strong fit</li>
+                            <li><strong>Regional Patterns</strong><br>Clear correlation between economic prosperity and well-being</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="visual-placeholder">
+                            Tableau Visualizations:
+                            <br>• Global Happiness Choropleth Map
+                            <br>• GDP vs Happiness Scatter Plot
+                            <br>• Regional Social Support Bar Chart
+                            <br>• Multiple Linear Regression Results
+                        </div>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h3>🔍 Business Intelligence Value</h3>
+                    <p>Data visualization + predictive modeling = actionable insights for policy makers and business strategists</p>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> This section demonstrates practical application of BI techniques. The high R-squared value shows the model's reliability, and the clear patterns validate the analytical approach.
+            </div>
+        </div>
+
+        <!-- Slide 11: Data Ethics -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Data Ethics & Compliance</div>
+                <div class="slide-subtitle">Responsible Data Management</div>
+            </div>
+            <div class="slide-content">
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">🔒</div>
+                        <h3>Privacy Protection</h3>
+                        <p>GDPR compliance, data anonymization, and secure storage of customer information</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">✋</div>
+                        <h3>Informed Consent</h3>
+                        <p>Transparent data collection practices and clear ownership rights communication</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">⚖️</div>
+                        <h3>Bias Prevention</h3>
+                        <p>Identifying and countering algorithmic bias, ensuring equitable representation</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">📋</div>
+                        <h3>Transparency</h3>
+                        <p>Clear documentation of methods, assumptions, and limitations for stakeholders</p>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h3>🎯 Responsible Implementation</h3>
+                    <p>All insights and recommendations prioritize customer well-being and social good over pure profit maximization</p>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Ethics isn't just compliance—it's about building customer trust. Emphasize that responsible data practices actually enhance business value by building stronger customer relationships.
+            </div>
+        </div>
+
+        <!-- Slide 12: Conclusions & Recommendations -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Strategic Recommendations</div>
+                <div class="slide-subtitle">Implementing Data-Driven Inventory Management</div>
+            </div>
+            <div class="slide-content">
+                <div class="conclusion-grid">
+                    <div class="conclusion-card">
+                        <h3>⚡ Real-Time Analytics</h3>
+                        <p>Deploy streaming analytics for immediate response to weather changes, social trends, and promotional campaigns</p>
+                    </div>
+                    <div class="conclusion-card">
+                        <h3>🎯 Predictive Models</h3>
+                        <p>Develop machine learning models combining internal sales data with external factors for accurate demand forecasting</p>
+                    </div>
+                    <div class="conclusion-card">
+                        <h3>📊 Business Intelligence</h3>
+                        <p>Create interactive dashboards enabling store managers to make data-driven inventory decisions in real-time</p>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h3>🚀 Expected Outcomes</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                        <div class="stat-box">
+                            <span class="stat-number">25%</span>
+                            <div class="stat-label">Reduction in Food Waste</div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">15%</span>
+                            <div class="stat-label">Increase in Sales</div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">30%</span>
+                            <div class="stat-label">Improved Forecast Accuracy</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Conclude with concrete benefits and ROI projections. Emphasize that this isn't just about technology—it's about creating a competitive advantage through better decision-making.
+            </div>
+        </div>
+
+        <!-- Slide 13: Implementation Roadmap -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Implementation Roadmap</div>
+                <div class="slide-subtitle">Phased Approach to Digital Transformation</div>
+            </div>
+            <div class="slide-content">
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <h3>Phase 1: Foundation</h3>
+                        <p><strong>Months 1-3:</strong> Data warehouse implementation, ETL pipeline setup, historical data migration</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <h3>Phase 2: Integration</h3>
+                        <p><strong>Months 4-6:</strong> External data source integration, API connections, cloud infrastructure deployment</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <h3>Phase 3: Analytics</h3>
+                        <p><strong>Months 7-9:</strong> OLAP cube development, predictive model training, dashboard creation</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <h3>Phase 4: Optimization</h3>
+                        <p><strong>Months 10-12:</strong> Real-time streaming, big data processing, AI/ML enhancement</p>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <h3>🎯 Success Metrics</h3>
+                    <p>Track inventory turnover rates, customer satisfaction scores, waste reduction, and forecast accuracy throughout implementation</p>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Emphasize the phased approach reduces risk and allows for learning and adjustment. Each phase builds on the previous one, ensuring sustainable implementation.
+            </div>
+        </div>
+
+        <!-- Slide 14: Q&A -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-title">Questions & Discussion</div>
+                <div class="slide-subtitle">Data-Driven Future for Starbucks</div>
+            </div>
+            <div class="slide-content">
+                <div class="highlight-box" style="height: 60vh; display: flex; flex-direction: column; justify-content: center;">
+                    <h2 style="font-size: 3em; margin-bottom: 30px;">💬</h2>
+                    <h3 style="font-size: 2em; margin-bottom: 30px;">Thank You!</h3>
+                    <p style="font-size: 1.5em; margin-bottom: 30px;">Ready to discuss how Business Intelligence can transform retail operations?</p>
+                    <div style="font-size: 1.2em;">
+                        <p><strong>Key Topics for Discussion:</strong></p>
+                        <p>• Implementation challenges and solutions</p>
+                        <p>• ROI expectations and measurement</p>
+                        <p>• Integration with existing systems</p>
+                        <p>• Scaling across global operations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="presenter-notes">
+                <strong>Presenter Notes:</strong> Encourage questions about technical implementation, business impact, or ethical considerations. Be prepared to discuss cost-benefit analysis and change management strategies.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()">← Previous</button>
+        <button class="nav-btn" onclick="nextSlide()">Next →</button>
+    </div>
+
+    <!-- Slide Counter -->
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">14</span>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                nextSlide();
+            } else if (event.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (event.key === 'Home') {
+                showSlide(0);
+            } else if (event.key === 'End') {
+                showSlide(totalSlides - 1);
+            }
+        });
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', function(event) {
+            touchStartX = event.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', function(event) {
+            touchEndX = event.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                nextSlide(); // Swipe left - next slide
+            }
+            if (touchEndX > touchStartX + 50) {
+                previousSlide(); // Swipe right - previous slide
+            }
+        }
+
+        // Auto-advance timer (optional - can be enabled for presentations)
+        // setInterval(nextSlide, 30000); // Advance every 30 seconds
+    </script>
+</body>
+</html>>🏗️ Infrastructure</h3>
+                        <p>Implement hybrid cloud architecture combining data warehouses for structured data and Hadoop for big data processing</p>
+                    </div>
+                    <div class="conclusion-card">
+                        <h3
